@@ -5,7 +5,7 @@ Description: Deploys a solution that enables the querying of DynamoDB item histo
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 60
 
 Parameters:
   DynamoDbTableName:
@@ -28,19 +28,27 @@ Resources:
       StreamSpecification:
         StreamViewType: NEW_IMAGE
 
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  StreamItemProcessorFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      CodeUri: hello_world/
+      CodeUri: stream_item_processor/
       Handler: app.lambda_handler
       Runtime: python3.9
       Architectures:
         - x86_64
+      Events:
+        DynamoDbStream:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt DynamoDbTable.StreamArn
+            StartingPosition: LATEST
+            BatchSize: 25
+            Enabled: true
 
 Outputs:
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  StreamItemProcessorFunction:
+    Description: "Stream Item Processor Lambda Function ARN"
+    Value: !GetAtt StreamItemProcessorFunction.Arn
+  StreamItemProcessorFunctionIamRole:
+    Description: "Implicit IAM Role created for Stream Item Processor function"
+    Value: !GetAtt StreamItemProcessorFunctionRole.Arn
