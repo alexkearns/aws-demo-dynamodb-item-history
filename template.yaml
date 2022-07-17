@@ -11,7 +11,7 @@ Parameters:
   DynamoDbTableName:
     Type: String
     Description: The name of DynamoDB table to create
-    Default: dummy-dynamodb-table
+    Default: example-dynamodb-table
 
 Resources:
   GlueDatabase:
@@ -19,7 +19,7 @@ Resources:
     Properties:
       CatalogId: !Ref AWS::AccountId
       DatabaseInput:
-        Name: dummy_glue_database
+        Name: dynamodb_item_history_glue_database
 
   GlueCrawlerRole:
     Type: AWS::IAM::Role
@@ -50,7 +50,7 @@ Resources:
     Type: AWS::Glue::Crawler
     Properties:
       DatabaseName: !Ref GlueDatabase
-      Name: dummy-glue-crawler
+      Name: dynamodb-item-history-glue-crawler
       Role: !GetAtt GlueCrawlerRole.Arn
       Targets:
         S3Targets:
@@ -59,7 +59,7 @@ Resources:
   AthenaWorkgroup:
     Type: AWS::Athena::WorkGroup
     Properties:
-      Name: dummy-workgroup-name
+      Name: dynamodb-item-history-workgroup
       WorkGroupConfiguration:
         ResultConfiguration:
           EncryptionConfiguration:
@@ -83,7 +83,7 @@ Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub dummy-dynamodb-history-${AWS::AccountId}
+      BucketName: !Sub dynamodb-item-history-${AWS::AccountId}
       PublicAccessBlockConfiguration:
         BlockPublicAcls: True
         BlockPublicPolicy: True
