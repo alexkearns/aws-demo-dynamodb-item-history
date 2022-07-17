@@ -19,7 +19,7 @@ Resources:
     Properties:
       CatalogId: !Ref AWS::AccountId
       DatabaseInput:
-        Name: dummy-glue-database
+        Name: dummy_glue_database
 
   GlueCrawlerRole:
     Type: AWS::IAM::Role
