@@ -14,6 +14,20 @@ Parameters:
     Default: dummy-dynamodb-table
 
 Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub dummy-dynamodb-history-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
   DynamoDbTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -34,6 +48,9 @@ Resources:
       CodeUri: stream_item_processor/
       Handler: app.lambda_handler
       Runtime: python3.9
+      Environment:
+        Variables:
+          S3_BUCKET: !Ref S3Bucket
       Architectures:
         - x86_64
       Events:
@@ -44,6 +61,13 @@ Resources:
             StartingPosition: LATEST
             BatchSize: 25
             Enabled: true
+      Policies:
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+              Resource: !Sub ${S3Bucket.Arn}/*
 
 Outputs:
   StreamItemProcessorFunction:
