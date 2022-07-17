@@ -56,6 +56,30 @@ Resources:
         S3Targets:
           - Path: !Sub ${S3Bucket}/${DynamoDbTable}
 
+  AthenaWorkgroup:
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Name: dummy-workgroup-name
+      WorkGroupConfiguration:
+        ResultConfiguration:
+          EncryptionConfiguration:
+            EncryptionOption: SSE_S3
+          OutputLocation: !Sub s3://${AthenaQueryResultsS3Bucket}
+
+  AthenaQueryResultsS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub athena-query-results-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
