@@ -51,8 +51,11 @@ Resources:
       Environment:
         Variables:
           S3_BUCKET: !Ref S3Bucket
+          TABLE_NAME: !Ref DynamoDbTable
       Architectures:
         - x86_64
+      Layers:
+        - !Sub arn:aws:lambda:${AWS::Region}:336392948345:layer:AWSDataWrangler-Python39:5
       Events:
         DynamoDbStream:
           Type: DynamoDB

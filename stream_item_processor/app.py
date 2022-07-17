@@ -1,8 +1,14 @@
 import json
+import os
+import pandas as pd
+import awswrangler as wr
+from uuid import uuid4
 from datetime import datetime, timezone
 
 
 PK_NAME = "PK"
+S3_BUCKET = os.getenv("S3_BUCKET")
+TABLE_NAME = os.getenv("TABLE_NAME")
 
 
 def lambda_handler(event, context):
@@ -21,6 +27,7 @@ def lambda_handler(event, context):
     """
 
     records = event["Records"]
+    transformed_records = []
     for record in records:
         event_type = record["eventName"]
         pk_val = record["dynamodb"]["Keys"][PK_NAME]["S"]
@@ -45,6 +52,15 @@ def lambda_handler(event, context):
             "%Y-%m-%d %H:%M:%S.%f"
         )
 
-        print(json.dumps(flat_new_image))
+        transformed_records.append(flat_new_image)
+
+    now = datetime.utcnow()
+    df = pd.DataFrame(transformed_records)
+    wr.s3.to_parquet(
+        df,
+        f"s3://{S3_BUCKET}/{TABLE_NAME}/year={now.year}/month={now.month}/day={now.day}/{uuid4()}.parquet",
+        index=False,
+        compression="snappy"
+    )
 
     return None
